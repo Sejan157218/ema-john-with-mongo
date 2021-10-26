@@ -3,6 +3,7 @@ import './Cart.css';
 
 const Cart = (props) => {
     const { cart } = props;
+    console.log(cart);
     // const totalReducer = (previous, product) => previous + product.price;
     // const total = cart.reduce(totalReducer, 0);
     let totalQuantity = 0;
@@ -13,6 +14,7 @@ const Cart = (props) => {
         }
         total = total + product.price * product.quantity;
         totalQuantity = totalQuantity + product.quantity;
+        console.log(totalQuantity, total);
     }
 
     const shipping = total > 0 ? 15 : 0;

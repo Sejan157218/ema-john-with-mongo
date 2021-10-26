@@ -4,24 +4,28 @@ import Product from '../Product/Product';
 import { addToDb, getStoredCart } from '../../utilities/fakedb';
 import './Shop.css';
 import { Link } from 'react-router-dom';
+import useCart from '../hooks/useCart';
 
 const Shop = () => {
     const [products, setProducts] = useState([]);
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useCart();
     // products to be rendered on the UI
     const [displayProducts, setDisplayProducts] = useState([]);
 
-    const [pageNumber, setPageNumber] = useState();
-
+    const [pageCount, setPageCount] = useState(0);
+    const [page, setPage] = useState(0);
+    const size = 10;
     useEffect(() => {
-        fetch('http://localhost:9000/products')
+        fetch(`http://localhost:9000/products?page=${page}&&size=${size}`)
             .then(res => res.json())
             .then(data => {
                 setProducts(data.products);
                 setDisplayProducts(data.products);
-                setPageNumber(data.count);
+                const count = data.count;
+                const pageNumber = Math.ceil(count / 10);
+                setPageCount(pageNumber);
             });
-    }, []);
+    }, [page]);
 
     useEffect(() => {
         if (products.length) {
@@ -37,16 +41,19 @@ const Shop = () => {
             }
             setCart(storedCart);
         }
-    }, [products])
+    }, [])
 
     const handleAddToCart = (product) => {
         // jhonkar vai solution
         const exists = cart.find(pd => pd.key === product.key);
+        const rest = cart.filter(pd => pd.key !== product.key);
         let newCart = [];
         if (exists) {
-            const rest = cart.filter(pd => pd.key !== product.key)
-            exists.quantity += 1;
-            newCart = [...rest, product]
+            exists.quantity = exists.quantity + 1;
+            // newCart = [...rest, product]
+            // change for monogo
+            newCart = [...rest, exists]
+            console.log(newCart);
         }
         else {
             product.quantity = 1;
@@ -56,12 +63,12 @@ const Shop = () => {
 
         // My solution 
         // const newSetCart = [...cart]
-        // const productFind = cart.find(pd=>pd.key===product.key)
-        // if(productFind){
-        //     productFind.quantity +=1;
+        // const productFind = cart.find(pd => pd.key === product.key)
+        // if (productFind) {
+        //     productFind.quantity += 1;
         // }
-        // else{
-        //     product.quantity =1;
+        // else {
+        //     product.quantity = 1;
         //     newSetCart.push(product);
         // }
         // setCart(newSetCart);
@@ -95,6 +102,19 @@ const Shop = () => {
                             handleAddToCart={handleAddToCart}
                         >
                         </Product>)
+                    }
+                    {
+                        <div className="pagination">
+                            {
+                                [...Array(pageCount).keys()].map(number =>
+                                    <button className={number === page ? 'selected' : ''}
+                                        key={number}
+                                        onClick={() => setPage(number)}
+                                    >
+                                        {number + 1}
+                                    </button>)
+                            }
+                        </div>
                     }
                 </div>
                 <div className="cart-container">
